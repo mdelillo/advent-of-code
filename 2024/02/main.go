@@ -32,15 +32,16 @@ func getSafeReportCount(reports []string) (int, error) {
 			levels = append(levels, num)
 		}
 
-		if isSafe(levels) {
+		if isSafe(levels, false) {
 			count++
 		}
 	}
 	return count, nil
 }
 
-func isSafe(levels []int) bool {
+func isSafe(levels []int, dampened bool) bool {
 	safe := true
+	unsafeIndex := -1
 
 	direction := "increasing"
 	if levels[1] < levels[0] {
@@ -51,14 +52,39 @@ func isSafe(levels []int) bool {
 		diff := math.Abs(float64(levels[i] - levels[i-1]))
 		if diff < 1 || diff > 3 {
 			safe = false
+			unsafeIndex = i
 			break
 		}
 
 		if (levels[i] > levels[i-1] && direction == "decreasing") ||
 			(levels[i] < levels[i-1] && direction == "increasing") {
 			safe = false
+			unsafeIndex = i
 			break
 		}
 	}
+
+	if !safe && !dampened {
+		var levelsWithoutUnsafeIndex []int
+		levelsWithoutUnsafeIndex = append(levelsWithoutUnsafeIndex, levels[:unsafeIndex]...)
+		levelsWithoutUnsafeIndex = append(levelsWithoutUnsafeIndex, levels[unsafeIndex+1:]...)
+		if isSafe(levelsWithoutUnsafeIndex, true) {
+			return true
+		}
+
+		var levelsWithoutPreviousIndex []int
+		levelsWithoutPreviousIndex = append(levelsWithoutPreviousIndex, levels[:unsafeIndex-1]...)
+		levelsWithoutPreviousIndex = append(levelsWithoutPreviousIndex, levels[unsafeIndex:]...)
+		if isSafe(levelsWithoutPreviousIndex, true) {
+			return true
+		}
+
+		var levelsWithoutFirstValue []int
+		levelsWithoutFirstValue = append(levelsWithoutFirstValue, levels[1:]...)
+		if isSafe(levelsWithoutFirstValue, true) {
+			return true
+		}
+	}
+
 	return safe
 }
