@@ -22,14 +22,11 @@ func main() {
 	slices.Sort(list1)
 	slices.Sort(list2)
 
-	totalDistance := 0
+	totalDistance := calculateTotalDistance(list1, list2)
+	totalSimilarity := calculateTotalSimilarity(list1, list2)
 
-	for i := 0; i < len(list1); i++ {
-		distance := int(math.Abs(float64(list1[i] - list2[i])))
-		totalDistance += distance
-	}
-
-	fmt.Println(totalDistance)
+	fmt.Printf("Total distance: %d\n", totalDistance)
+	fmt.Printf("Total similarity: %d\n", totalSimilarity)
 }
 
 func splitInput(input string) ([]int, []int, error) {
@@ -53,4 +50,32 @@ func splitInput(input string) ([]int, []int, error) {
 	}
 
 	return list1, list2, nil
+}
+
+func calculateTotalDistance(list1 []int, list2 []int) int {
+	totalDistance := 0
+
+	for i := 0; i < len(list1); i++ {
+		distance := int(math.Abs(float64(list1[i] - list2[i])))
+		totalDistance += distance
+	}
+	return totalDistance
+}
+
+func calculateTotalSimilarity(list1 []int, list2 []int) int {
+	totalSimilarity := 0
+	numberCounts := map[int]int{}
+
+	for i := 0; i < len(list2); i++ {
+		number := list2[i]
+		numberCounts[number]++
+	}
+
+	for i := 0; i < len(list1); i++ {
+		number := list1[i]
+		similarity := number * numberCounts[number]
+		totalSimilarity += similarity
+	}
+
+	return totalSimilarity
 }
