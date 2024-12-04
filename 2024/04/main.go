@@ -11,7 +11,9 @@ func main() {
 
 	grid := parseInput(input)
 	xmasCount := getXMASCount(grid)
+	xmasCount2 := getXMASCount2(grid)
 	fmt.Printf("XMAS count: %d\n", xmasCount)
+	fmt.Printf("X-MAS count: %d\n", xmasCount2)
 }
 
 func parseInput(input string) [][]rune {
@@ -76,6 +78,40 @@ func hasXMAS(grid [][]rune, startingX int, startingY int, direction string) int 
 			return 0
 		}
 
+	}
+
+	return 1
+}
+
+func getXMASCount2(grid [][]rune) int {
+	count := 0
+
+	for x, row := range grid {
+		for y, _ := range row {
+			count += hasXMAS2(grid, x, y)
+		}
+	}
+
+	return count
+}
+
+func hasXMAS2(grid [][]rune, x int, y int) int {
+	if grid[x][y] != 'A' {
+		return 0
+	}
+
+	maxX := len(grid[0]) - 1
+	maxY := len(grid) - 1
+	if x-1 < 0 || x+1 > maxX || y-1 < 0 || y+1 > maxY {
+		return 0
+	}
+
+	if !((grid[x-1][y-1] == 'M' && grid[x+1][y+1] == 'S') || (grid[x-1][y-1] == 'S' && grid[x+1][y+1] == 'M')) {
+		return 0
+	}
+
+	if !((grid[x+1][y-1] == 'M' && grid[x-1][y+1] == 'S') || (grid[x+1][y-1] == 'S' && grid[x-1][y+1] == 'M')) {
+		return 0
 	}
 
 	return 1
