@@ -20,33 +20,41 @@ func calculateTotal(updates [][]int, dependents map[int][]int) int {
 	total := 0
 
 	for _, update := range updates {
-		//fmt.Printf("Checking update %d\n", i+1)
-		if !correctOrder(update, dependents) {
-			continue
-		}
-
-		total += update[len(update)/2]
+		//fmt.Printf("Checking update %d (%#v)\n", i+1, update)
+		total += getValue(update, dependents, true)
 	}
 
 	return total
 }
 
-func correctOrder(update []int, dependents map[int][]int) bool {
-	seenValues := map[int]bool{}
+func getValue(update []int, dependents map[int][]int, firstTry bool) int {
+	seenValues := map[int]int{}
 
-	for _, value := range update {
+	for i, value := range update {
 		for _, dependent := range dependents[value] {
-			if _, seen := seenValues[dependent]; seen {
+			if seenIndex, seen := seenValues[dependent]; seen {
 				//fmt.Printf("Not correct: %d must come before %d\n", value, dependent)
-				return false
+				var fixedUpdate []int
+				if seenIndex > 0 {
+					fixedUpdate = append(fixedUpdate, update[0:seenIndex]...)
+				}
+				fixedUpdate = append(fixedUpdate, value)
+				fixedUpdate = append(fixedUpdate, update[seenIndex:i]...)
+				fixedUpdate = append(fixedUpdate, update[i+1:]...)
+				//fmt.Printf("Fixed %#v to %#v\n", update, fixedUpdate)
+				return getValue(fixedUpdate, dependents, false)
 			}
 		}
 		//fmt.Printf("Seen %d\n", value)
-		seenValues[value] = true
+		seenValues[value] = i
 	}
 
 	//fmt.Println("Valid!")
-	return true
+	if firstTry {
+		return 0
+	} else {
+		return update[len(update)/2]
+	}
 }
 
 func parseInput(input string) (map[int][]int, [][]int) {
